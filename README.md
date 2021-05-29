@@ -29,6 +29,16 @@ generar un bot en Telegram para que te lleguen las notificaciones.
 
 Recuerda hacer una copia del archivo **.env.example** a uno llamado **.env** en la misma ruta
 
+```
+cp .env.example .env
+```
+
+Así mismo debes hacer una copia del archivo que se encuentra dentro de la carpeta database
+
+```
+cp bot.example.db bot.db
+```
+
 Para correr solo el módulo de operaciones de trading:
 ```
 node src/trading/operation.js
