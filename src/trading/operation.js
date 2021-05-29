@@ -54,7 +54,7 @@ let openOrdersS;
         console.log('Ejecutando operación');
         // Obtiene los porcentajes
         let marketDB = await verifyPercentage();
-        //await comparativePrice(myTickers, marketDB);
+        await comparativePrice(myTickers, marketDB);
         // Actualiza la tabla markets con los nuevos indicadores
         await theMarkets(myTickers);
     }, {
@@ -101,11 +101,15 @@ const comparativePrice = async (mytickers, tickerdb) => {
                 console.log('Ejecutando compra de', nombre);
                 let id = await generateOrder(nombre);
                 console.log(id);
-                telegram.setting(process.env.TOKEN, process.env.USERID);
-                await telegram.send(`Realizando orden de compra ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
-                let orderSell = await generateOrderSell(id);
-                console.log(orderSell);
-                await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
+                // Si el ID es 0 quiere decir que no tenemos saldo y no puede hacer una venta sin la compra
+                if (id !== 0) {
+                    telegram.setting(process.env.TOKEN, process.env.USERID);
+                    await telegram.send(`Realizando orden de compra ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
+                    let orderSell = await generateOrderSell(id);
+                    console.log(orderSell);
+                    await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
+                }
+
             } else {
                 console.log('No cumple condición de compra');
             }
