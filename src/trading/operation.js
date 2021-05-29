@@ -101,13 +101,13 @@ const comparativePrice = async (mytickers, tickerdb) => {
                 console.log('Ejecutando compra de', nombre);
                 let id = await generateOrder(nombre);
                 console.log(id);
-                // Si el ID es 0 quiere decir que no tenemos saldo y no puede hacer una venta sin la compra
+                // Si el ID es 0 no tenemos saldo
                 if (id !== 0) {
                     telegram.setting(process.env.TOKEN, process.env.USERID);
                     await telegram.send(`Realizando orden de compra ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
                     let orderSell = await generateOrderSell(id);
                     console.log(orderSell);
-                    await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
+                    await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${orderSell.price}`);
                 }
 
             } else {
@@ -187,8 +187,8 @@ const generateOrderSell = async (id) => {
     // Crea orden de venta
     console.log('Datos de orden de venta', myOrderSell);
     let orderExecSell = await order.create(myOrderSell);
-    console.log('Orden de venta', orderExecSell);
-    return orderExecSell;
+    console.log('Orden de venta', orderExecSell.data);
+    return orderExecSell.data;
 }
 
 /**
