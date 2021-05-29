@@ -53,7 +53,7 @@ let openOrdersS;
     cron.schedule('*/3 * * * *', async () => {
         console.log('Ejecutando operación');
         // Obtiene los porcentajes
-        let marketDB = await verifyPercentage();
+        let marketDB = await getIndicatorMarkets();
         await comparativePrice(myTickers, marketDB);
         // Actualiza la tabla markets con los nuevos indicadores
         await theMarkets(myTickers);
@@ -80,7 +80,7 @@ const theMarkets = async (markets) => {
  * Obtiene los datos de los mercados en la DB
  * @returns {Promise<any>}
  */
-const verifyPercentage = async () => {
+const getIndicatorMarkets = async () => {
     return await methods.getMarkets();
 }
 
@@ -160,6 +160,11 @@ const generateOrder = async (myMarket) => {
     }
 }
 
+/**
+ * Crea la orden de venta con el porcentaje definido 
+ * @param id
+ * @returns {Promise<*>}
+ */
 const generateOrderSell = async (id) => {
     console.log('Id de orden para generar la venta', id);
     // Buscamos la orden para saber las condiciones de compra
@@ -186,6 +191,11 @@ const generateOrderSell = async (id) => {
     return orderExecSell;
 }
 
+/**
+ * Obtiene el balance de la moneda que le pasemos ETH, XLM, EOS
+ * @param market
+ * @returns {Promise<*>}
+ */
 const getBalance = async (market) => {
     let balanceData = await balance();
     let { data } = balanceData;
