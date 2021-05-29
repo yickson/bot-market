@@ -25,6 +25,10 @@ de porcentaje para generar la ganancia en base a la operación.
 Debes configurar tu API en CryptoMKT para poder realizar la conexión correspondiente, también debes
 generar un bot en Telegram para que te lleguen las notificaciones.
 
+### Configuración
+
+Recuerda hacer una copia del archivo **.env.example** a uno llamado **.env** en la misma ruta
+
 Para correr solo el módulo de operaciones de trading:
 ```
 node src/trading/operation.js
