@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <title>SUPER-BOT</title>
+</head>
+
+<body>
+
+<div class="container is-fluid">
+    <section class="hero is-link">
+        <div class="hero-body">
+            <p class="title">
+                Bienvenido
+            </p>
+            <p class="subtitle">
+                <%= titulo %>
+            </p>
+        </div>
+    </section>
+
+    <div class="columns">
+        <div class="column">
+            <section class="section is-medium">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content">
+                                <p class="title is-4">Monedas</p>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <ul>
+                                <% for(const currency in currencies) {%>
+                                    <li><%= currency %></li>
+                                <% }%>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="column">
+            <section class="section is-medium">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content">
+                                <p class="title is-4">Ordenes abiertas</p>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <ul id="order-opens">
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="column">
+            <section class="section is-medium">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content">
+                                <p class="title is-4">Monedas</p>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <ul>
+                                <% for(const currency in currencies) {%>
+                                    <li><%= currency %></li>
+                                <% }%>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="column">
+            <section class="section is-medium">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content">
+                                <p class="title is-4">Monedas</p>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <ul>
+                                <% for(const currency in currencies) {%>
+                                    <li><%= currency %></li>
+                                <% }%>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+<script>
+    window.onload = function() {
+        setInterval(async () => {
+            const response = await fetch('/indicators');
+            const data = await response.json();
+            let myData = data.data;
+            let order = '';
+            for (const item of myData) {
+                let {tradeId, price, initAmount} = item
+                order += `<li>ID: ${tradeId} - Monto: ${parseFloat(initAmount).toFixed(4)} - Precio: ${parseFloat(price).toFixed(4)}</li>`
+            }
+            document.getElementById('order-opens').innerHTML = order;
+        }, 60000);
+    };
+</script>
+</body>
+</html>
