@@ -106,7 +106,6 @@ const comparativePrice = async (mytickers, tickerdb) => {
                     telegram.setting(process.env.TOKEN, process.env.USERID);
                     await telegram.send(`Realizando orden de compra ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
                     let orderSell = await generateOrderSell(id);
-                    console.log(orderSell);
                     await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${orderSell.price}`);
                 }
 
@@ -185,7 +184,6 @@ const generateOrderSell = async (id) => {
         side: "sell"
     }
     // Crea orden de venta
-    console.log('Datos de orden de venta', myOrderSell);
     let orderExecSell = await order.create(myOrderSell);
     console.log('Orden de venta', orderExecSell.data);
     return orderExecSell.data;
