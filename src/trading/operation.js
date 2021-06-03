@@ -1,7 +1,6 @@
 const cron = require('node-cron');
 const client = require('../modules/client.cryptomkt');
 const order = require('../modules/order.cryptomkt');
-const balance = require('../modules/balance.cryptomkt');
 const ticker = require('../modules/ticker.cryptomkt');
 const tickerEnum = require('../enum/enum.ticker');
 const tickersocketEnum = require('../enum/enum.tickersocket');
@@ -17,6 +16,7 @@ const operationTrading = async () => {
 let socket;
 let balancesS;
 let openOrdersS;
+let begins = true;
 
 (async () => {
     socket = await client.socket.connect();
@@ -50,11 +50,16 @@ let openOrdersS;
     });
 
     // Reloj recurrente que ejecuta la operación cada cierto tiempo
-    cron.schedule('*/3 * * * *', async () => {
+    cron.schedule(`*/${process.env.CRON_MINUTES} * * * *`, async () => {
         console.log('Ejecutando operación');
         // Obtiene los porcentajes
         let marketDB = await getIndicatorMarkets();
-        await comparativePrice(myTickers, marketDB);
+        // Comienzo no compara para que solo haga la actualización de los mercados
+        if (!begins) {
+            await comparativePrice(myTickers, marketDB);
+        } else {
+            begins = false;
+        }
         // Actualiza la tabla markets con los nuevos indicadores
         await theMarkets(myTickers);
     }, {
@@ -105,6 +110,8 @@ const comparativePrice = async (mytickers, tickerdb) => {
                 if (id !== 0) {
                     telegram.setting(process.env.TOKEN, process.env.USERID);
                     await telegram.send(`Realizando orden de compra ${nombre} por un monto de ${process.env.AMOUNT_BY_OPERATION}`);
+                    await delay(10000);
+                    console.log('Retraso de 10 segundos');
                     let orderSell = await generateOrderSell(id);
                     await telegram.send(`Realizando orden de venta ${nombre} por un monto de ${orderSell.price}`);
                 }
@@ -168,41 +175,26 @@ const generateOrderSell = async (id) => {
     console.log('Id de orden para generar la venta', id);
     // Buscamos la orden para saber las condiciones de compra
     let orderQuery = await order.getStatus({id: id});
-    let { market, avg_execution_price, fills, side } = orderQuery.data;
-    let marketSlice = market.slice(0,3);
-    let amountSell = await getBalance(marketSlice);
+    let { market, amount, avg_execution_price, side } = orderQuery.data;
+    // Obtenemos criptomonedas que efectivamente si tenemos
+    let amountSell = parseFloat(amount.original) - parseFloat(amount.original) * 0.006
     console.log('Monto de venta', amountSell);
     // Creamos la orden en la base de datos
-    await methods.createOrder([market, id, parseInt(process.env.AMOUNT_BY_OPERATION), fills[0].amount, side, avg_execution_price, 'filled']);
+    await methods.createOrder([market, id, parseInt(process.env.AMOUNT_BY_OPERATION), amountSell, side, avg_execution_price, 'queued']);
     //Generamos una orden de venta
     let priceSell = parseFloat(avg_execution_price) * (parseFloat(process.env.PERCENTAGE_PROFIT) / 100) + parseFloat(avg_execution_price);
     const myOrderSell = {
-        amount: amountSell,
+        amount: amountSell.toString(),
         market: market,
         price: priceSell.toString(),
         type: "limit",
         side: "sell"
     }
+    console.log('Data para generar venta', myOrderSell);
     // Crea orden de venta
     let orderExecSell = await order.create(myOrderSell);
     console.log('Orden de venta', orderExecSell.data);
     return orderExecSell.data;
-}
-
-/**
- * Obtiene el balance de la moneda que le pasemos ETH, XLM, EOS
- * @param market
- * @returns {Promise<*>}
- */
-const getBalance = async (market) => {
-    let balanceData = await balance();
-    let { data } = balanceData;
-    for (const myBalance of data) {
-        let {wallet, available} = myBalance;
-        if (wallet === market) {
-            return available;
-        }
-    }
 }
 
 /**
@@ -228,6 +220,8 @@ const toFixedNotation = async(x) => {
     }
     return x;
 }
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 
 
